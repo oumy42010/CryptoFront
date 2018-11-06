@@ -1,135 +1,109 @@
-<html>
 
-<head>
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="author" content="Oumy DIATTA">
 
-<script src="./assets/js/Chart.min.js"></script>
-<script src="./assets/js/jquery-1.12.0.min.js"></script> 
+    <!-- ============================== Bootstrap CSS ================================ -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="css/style.css" />
 
-</head>
+    <title>JP Portefeuille !</title>
+    <!-- ============================== favicon ============================================= -->
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
+     <!-- ============================== fonts ============================================= -->
+    <link href='http://fonts.googleapis.com/css?family=Lekton' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Allerta' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Molengo' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+    <link href='http://fonts.googleapis.com/css?family=Cardo' rel='stylesheet' type='text/css'>
+    
+    <!-- ============================ js ================================ -->
+    <script src="./assets/js/Chart.min.js"></script>
+	<script src="./assets/js/jquery-1.12.0.min.js"></script> 
+	<script src="js/lastValues.js"></script> 
+	<script src="js/marketCap.js"></script>
+	<script src="js/cryptoTable.js"></script>
+  </head>
+  <body>
+  	<header>
+  		<div class="row"><!-- Grid row-->
+  			<div class="col-sm-3" id="heure"></div>
+			<div class="col-sm-5"></div>
+			<div class="col-sm-4">
+			  	<div class="mCap">
+				  	<div id="marketCap"></div>
+					<div id="btcDominance"></div>
+				</div>
+			</div>
+		</div><!-- End Grid row-->
+	</header>
 
-<body>
+	<aside>
+		<h5 class="text-muted text-center"> Valeur de votre portefeuille</h5>
+		<p id="last" class="ValuesUsd text-center"></p>
+		<p class="figure ">
+		<p class="btn justify-content-end">
+		  <a class="btn btn-light active" data-toggle="collapse" href="#last24" role="button" aria-expanded="false" aria-controls="last24">24h
+		  </a>
+		  <a class="btn btn-light" data-toggle="collapse" href="#last7" role="button" aria-expanded="false" aria-controls="last7">7d
+		  </a>
+		  <a class="btn btn-light" data-toggle="collapse" href="#last1" role="button" aria-expanded="false" aria-controls="last1">1m
+		  </a>
+		  <a class="btn btn-light" data-toggle="collapse" href="#alltim" role="button" aria-expanded="false" aria-controls="alltim">All
+		  </a>
+		</p>
+		<div class="text-center" id="last24">
+		  <div class="card">
+		    <h4>Last Day</h4>
+			<div ><canvas id="last24h"></canvas></div>
+		  </div>
+		</div>
+		<div class="collapse text-center" id="last7">
+		  <div class="card">
+		    <h4>Last Week</h4>
+			<div><canvas id="last7d"></canvas></div>
+		  </div>
+		</div>
+		<div class="collapse text-center" id="last1">
+		  <div class="card">
+		    <h4>Last Month</h4>
+			<div ><canvas id="last1m"></canvas></div>
+		  </div>
+		</div>
+		<div class="collapse text-center" id="alltim">
+		  <div class="card">
+		    <h4>All time</h4>
+			<div ><canvas id="alltime"></canvas></div>
+		  </div>
+		</div>
+	</aside>
+    
+	<section>
+		<div id="tickersTable" class="centre table-responsive"></div>
+		<p class="text-right">Data provided by <a href="https://coinmarketcap.com/" target="blank">Coinmarketcap</a></p>
 
-	<p id="last"></p>
-	
-	<h4>Last Day</h4>
-	<div style="width: 100%;">
-		<canvas id="last24h"></canvas>
-	</div>
+	</section>
 
-	<h4>Last Week</h4>
-	<div style="width: 100%;">
-		<canvas id="last7d"></canvas>
-	</div>
+ 	<!-- ================= pieds de page ================================== -->
+	<footer class="text-muted">
+        <div class="row"><!-- Grid row-->
+             <div class="col-sm-12">
+              <div class="footer-copyright text-center">© 2018 Site Built By <a href="http://oumydiatta.eu/" target="blank">Oumy DIATTA</a></div>
+            </div>
+        </div><!-- end Grid row-->
+    </footer>  
 
-	<h4>Last Month</h4>
-	<div style="width: 100%;">
-		<canvas id="last1m"></canvas>
-	</div>
-
-	<h4>All time</h4>
-	<div style="width: 100%;">
-		<canvas id="alltime"></canvas>
-	</div>
-
-
-
-<script>
-
-	function lastValues(id, url) {
-
-		var jsonData = $.ajax({
-			url: url,
-			type: 'GET',
-			dataType: 'json',
-		}).done(function (results) {
-			var elmt = document.getElementById(id)
-			elmt.innerHTML = "Last value at " +
-					 results['timestamp'] + " : " +
-					 results['btc'] + " BTC -> "  + 
-					 results['usd'] + " USD" ;
-		});
-	} // end of lastValues()
-
-	function drawLineChart(canvasID, url) {
-
-		var jsonData = $.ajax({
-			url: url,
-			type: 'GET',
-			dataType: 'json',
-		}).done(function (results) {
-			// BTC
-        		results['datasets'][0]['borderColor'] = "rgba(3, 88,106, 0.7)";
-        		results['datasets'][0]['backgroundColor'] = "rgba(3, 88, 106, 0.3)";
-        		results['datasets'][0]['pointBackgroundColor'] = "rgba(3, 88, 106, 0.3)";
-        		results['datasets'][0]['pointBorderWidth'] = 3;
-        		results['datasets'][0]['borderWidth'] = 3;
-			//USD
-        		results['datasets'][1]['borderColor'] = "rgba(38, 185, 154, 0.7)";
-        		results['datasets'][1]['backgroundColor'] = "rgba(38, 185, 154, 0.3)";
-        		results['datasets'][1]['pointBorderWidth'] = 3;
-        		results['datasets'][1]['borderWidth'] = 3;
-
-			// Get the context of the canvas element we want to select
-			var ctx = document.getElementById(canvasID).getContext("2d");
-
-			Chart.defaults.global.elements.point.radius = 1;
-			Chart.defaults.global.hover.mode = 'nearest';
-			Chart.defaults.global.hover.intersect = false;
-			Chart.defaults.global.tooltips.mode = 'index';
-			Chart.defaults.global.tooltips.intersect = false;
-			// Instantiate a new chart
-			var myLineChart = new Chart(ctx, {
-				type: 'line',
-				data: results,
-				options: {
-					responsive: true,
-					elements: {
-						line: {
-							tension: 0, // disables bezier curves
-						}
-					},
-					showLines: true,
-					scales: {
-						yAxes: [{
-							id: 'BTC',
-							type: 'linear',
-							position: 'left',
-							display: false,
-							//ticks: {
-							//	beginAtZero: true
-							//},	
-							scaleLabel: {
-								display: false,
-								labelString: 'BTC'
-							}
-						}, {
-							id: 'USD',
-							type: 'linear',
-							position: 'right',
-							display: false,
-							//ticks: {
-							//	beginAtZero: true
-							//},	
-							scaleLabel: {
-								display: false,
-								labelString: 'USD ($)'
-							}
-						}]
-					}
-				} 
-			});
-
-		});
-	} // end of drawLineChart()
-
-	// const URL_CRYPTO_BACKEND='http://localhost:5000';
-	const URL_CRYPTO_BACKEND='https://terredumili.eu/cryptoback';
-	lastValues('last', URL_CRYPTO_BACKEND + '/last/');
-	drawLineChart( 'last24h', URL_CRYPTO_BACKEND + '/24h/');
-	drawLineChart( 'last7d' , URL_CRYPTO_BACKEND + '/7d/' );
-	drawLineChart( 'last1m' , URL_CRYPTO_BACKEND + '/1m/' );
-	drawLineChart( 'alltime', URL_CRYPTO_BACKEND + '/all/');
-
-</script>
-</body>
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  </body>
 </html>
+
+
+
